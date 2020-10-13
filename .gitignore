@@ -127,3 +127,15 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+
+# Vscode
+.vscode/
+
+# Static files
+staticfiles/
+
+# Media files
+mediafiles/
+
+# postgres files for local development
+.pgdata 
