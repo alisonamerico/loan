@@ -25,6 +25,9 @@ jobs:
         uses: actions/setup-python@v2
         with:
           python-version: ${{ matrix.python-version }}
+      - name: Copying configurations
+        run: |
+          cp contrib/env-sample .env
       - name: Install Dependencies Project
         run: |
           python -m pip install --upgrade pip
@@ -33,3 +36,6 @@ jobs:
       - name: Lint with flake8
         run: |
           poetry run flake8 .
+      - name: Test with pytest
+        run: |
+          poetry run pytest
