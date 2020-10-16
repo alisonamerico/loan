@@ -44,6 +44,7 @@ INSTALLED_APPS = [
 
     # Local Apps
     'fintech.core',
+    'fintech.api',
 
     # Third-Party Apps
     'rest_framework',
