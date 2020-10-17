@@ -1,33 +1,33 @@
 from rest_framework import serializers
-from fintech.api.models import Loan, Payment
+from fintech.api.models import Emprestimo, Pagamento
 
 
-class LoanSerializer(serializers.ModelSerializer):
+class EmprestimoSerializer(serializers.ModelSerializer):
 
     """
-    LoanSerializer - It will be defined which fields
-    will be displayed in the Loan view.
+    EmprestimoSerializer - It will be defined which fields
+    will be displayed in the Emprestimo view.
     """
 
-    client = serializers.ReadOnlyField(source='client.first_name')
+    cliente = serializers.ReadOnlyField(source='cliente.first_name')
 
     class Meta:
-        model = Loan
-        localized_fields = (
-            'id', 'client', 'principal', 'interest_rate', 'period',
-            'frequency', 'ip_address', 'request_date', 'bank'
+        model = Emprestimo
+        fields = (
+            'id', 'cliente', 'valor_nominal', 'taxa_juros', 'periodo',
+            'endereco_ip', 'taxa_juros', 'banco'
         )
 
 
-class PaymentSerializer(serializers.ModelSerializer):
+class PagamentoSerializer(serializers.ModelSerializer):
 
     """
-    LoanSerializer - It will be defined which fields
-    will be displayed in the Payment view.
+    EmprestimoSerializer - It will be defined which fields
+    will be displayed in the Pagamento view.
     """
 
-    loan = serializers.ReadOnlyField()
+    emprestimo = serializers.ReadOnlyField()
 
     class Meta:
-        model = Payment
-        fields = ('id', 'loan', 'payment_date', 'payment_value',)
+        model = Pagamento
+        fields = ('id', 'emprestimo', 'data_pagamento', 'valor_pagamento')

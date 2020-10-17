@@ -1,25 +1,25 @@
 from django.contrib import admin
-from fintech.api.models import Loan, Payment
+from fintech.api.models import Emprestimo, Pagamento
 
 
-@admin.register(Loan)
-class LoanAdmin(admin.ModelAdmin):
+@admin.register(Emprestimo)
+class EmprestimoAdmin(admin.ModelAdmin):
     """
     It will be defined which fields will be displayed
-    in the Loan view in the Admin
+    in the Emprestimo view in the Admin
     """
-    list_display = ('client', 'principal', 'interest_rate', 'period',
-                    'frequency', 'ip_address', 'request_date', 'bank',)
-    search_fields = ['client', 'ip_address', 'request_date', 'bank']
-    ordering = ('-client',)
+    list_display = ('cliente', 'valor_nominal', 'taxa_juros', 'periodo',
+                    'endereco_ip', 'banco', 'data_solicitacao_emprestimo')
+    search_fields = ['cliente', 'endereco_ip', 'taxa_juros', 'banco', 'data_solicitacao_emprestimo']
+    ordering = ('-cliente',)
 
 
-@admin.register(Payment)
-class PaymentAdmin(admin.ModelAdmin):
+@admin.register(Pagamento)
+class PagamentoAdmin(admin.ModelAdmin):
     """
     It will be defined which fields will be displayed
-    in the Payment view in the Admin
+    in the Pagamento view in the Admin
     """
-    list_display = ('loan_id', 'payment_date', 'payment_value')
-    search_fields = ['loan_id', 'payment_date', 'payment_value']
-    ordering = ('-payment_date',)
+    list_display = ('emprestimo_id', 'data_pagamento', 'valor_pagamento')
+    search_fields = ['emprestimo_id', 'data_pagamento', 'valor_pagamento']
+    ordering = ('-data_pagamento',)

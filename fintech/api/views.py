@@ -1,23 +1,23 @@
-from fintech.api.serializers import LoanSerializer, PaymentSerializer
-from fintech.api.models import Loan, Payment
+from fintech.api.serializers import EmprestimoSerializer, PagamentoSerializer
+from fintech.api.models import Emprestimo, Pagamento
 from rest_framework import viewsets
 
 
-class LoanViewSet(viewsets.ModelViewSet):
+class EmprestimoViewSet(viewsets.ModelViewSet):
 
-    serializer_class = LoanSerializer
+    serializer_class = EmprestimoSerializer
     allowed_methods = ('GET', 'POST')
 
     def get_queryset(self):
         """
-        This view should return a list of all the Loan
+        This view should return a list of all the Emprestimo
         for the currently authenticated user.
         """
         current_client = self.request.user.id
-        return Loan.objects.filter(client=current_client)
+        return Emprestimo.objects.filter(client=current_client)
 
 
-class PaymentViewSet(viewsets.ModelViewSet):
+class PagamentoViewSet(viewsets.ModelViewSet):
 
-    queryset = Payment.objects.all()
-    serializer_class = PaymentSerializer
+    queryset = Pagamento.objects.all()
+    serializer_class = PagamentoSerializer

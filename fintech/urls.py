@@ -17,12 +17,12 @@ from django.contrib import admin
 from django.urls import path, include
 from rest_framework import routers
 from rest_framework.authtoken.views import obtain_auth_token
-from fintech.api.views import LoanViewSet, PaymentViewSet
+from fintech.api.views import EmprestimoViewSet, PagamentoViewSet
 
 
 router = routers.DefaultRouter()
-router.register(r'loans', LoanViewSet, basename='loans')
-router.register(r'payments', PaymentViewSet, basename='payments')
+router.register(r'emprestimos', EmprestimoViewSet, basename='emprestimos')
+router.register(r'pagamentos', PagamentoViewSet, basename='pagamentos')
 
 urlpatterns = [
     path('admin/', admin.site.urls),
