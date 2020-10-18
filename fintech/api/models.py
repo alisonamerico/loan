@@ -5,7 +5,7 @@ from django.core.validators import MinValueValidator
 
 class Emprestimo(models.Model):
     """
-    This class contains the representation of the fields in the Emprestimo table.
+    Esta classe contém a representação dos campos da tabela Emprestimo.
     """
 
     valor_nominal = models.DecimalField(
@@ -32,69 +32,93 @@ class Emprestimo(models.Model):
         """A string representation of the model."""
         return f'{self.cliente}, {self.valor_nominal}, {self.data_solicitacao_emprestimo}'
 
+    def calcula_taxa_juros_em_percentual(taxa_juros):
+        """
+        Calcula a taxa de juros em percentual. Ex. 1%
+        :param taxa_juros_percentual: Valor da taxa de juros em percentual esperada.
+        :param taxa_juros: Taxa de Juros por periodo
+        :return taxa_juros_percentual:  Retorna valor da taxa de juros em percentual.
+        """
+        taxa_juros_percentual = taxa_juros / 100
+        return taxa_juros_percentual
+
+    def calcula_valor_parcela(valor_nominal, calcula_taxa_juros_em_percentual, periodo):
+        """
+        Calcula valor da parcela a ser paga
+        :param valor_nominal: Valor atual do empréstimo
+        :param taxa_juros: Taxa de Juros por periodo
+        :param periodo: Número de meses
+        :return valor_parcela:  Retorna valor da parcela a ser paga por mês
+        """
+        valor_parcela = (valor_nominal * calcula_taxa_juros_em_percentual) / \
+            (1 - (1 / (1 + calcula_taxa_juros_em_percentual) ** periodo))
+        return valor_parcela
+
+    def calcula_valor_juros_em_reais(valor_nominal, calcula_taxa_juros_em_percentual):
+        """
+        Calcula valor dos juros a ser pago em reais.
+        :param valor_nominal: Valor total que resta pagar em cada periodo.
+        :param taxa_juros: Taxa de Juros por periodo
+        :return valor_juros_em_reais:  Retorna o valor do juros em reais.
+        """
+        valor_juros_em_reais = valor_nominal * calcula_taxa_juros_em_percentual
+        return valor_juros_em_reais
+
+    def calcula_valor_amortizacao(calcula_valor_parcela, calcula_valor_juros_em_reais):
+        """
+        Calcula valor dos juros a ser pago em reais.
+        :param valor_nominal: Valor total que resta pagar em cada periodo.
+        :param taxa_juros: Taxa de Juros por periodo
+        :return valor_juros_em_reais:  Retorna o valor do juros em reais.
+        """
+        amortizacao = calcula_valor_parcela - calcula_valor_juros_em_reais
+        return amortizacao
+
     def calcula_saldo_devedor(valor_nominal, calcula_valor_amortizacao):
+        """
+        Calcula valor do saldo devedor.
+        :param valor_nominal: Valor total que resta pagar em cada periodo.
+        :param calcula_valor_amortizacao: Função que calcula o valor da amortização.
+        :return saldo_devedor:  Retorna o valor do do saldo devedor.
+        """
         saldo_devedor = valor_nominal - calcula_valor_amortizacao
         return saldo_devedor
 
-    def calcula_taxa_juros(valor_nominal, calcula_valor_amortizacao):
-        taxa_juros = (valor_nominal * calcula_valor_amortizacao) / 100
-        return taxa_juros
+    def cronograma_de_amortizacao(
+            calcula_valor_amortizacao, valor_nominal, calcula_taxa_juros_em_percentual, periodo
+    ):
+        """
+        Calcula valor do saldo devedor.
+        :param valor_nominal: Valor total que resta pagar em cada periodo.
+        :param calcula_valor_amortizacao: Função que calcula o valor da amortização.
+        :return saldo_devedor:  Retorna o valor do do saldo devedor.
+        """
+        valor_amortizacao = calcula_valor_amortizacao
+        numero_parcelas = 1
+        saldo_devedor = valor_nominal
+        while numero_parcelas <= periodo:
+            interest = saldo_devedor * calcula_taxa_juros_em_percentual
+            valor_nominal = valor_amortizacao - interest
+            saldo_devedor = saldo_devedor - valor_nominal
+            yield numero_parcelas, valor_amortizacao, interest, valor_nominal, saldo_devedor \
+                if saldo_devedor > 0 else 0
+            numero_parcelas += 1
 
-    def calcula_valor_parcela(valor_nominal, taxa_juros, periodo):
-        valor_parcela = (valor_nominal * taxa_juros) / (1 - (1 / (1 + taxa_juros) ** periodo))
-        return valor_parcela
-
-    def calcula_valor_amortizacao(calcula_valor_parcela, calcula_taxa_juros):
-        amortizacao = calcula_valor_parcela - calcula_taxa_juros
-        return amortizacao
-
-    # def calcula_valor_amortizacao_por_periodo(calcula_valor_amortizacao):
-    #     valor_amortizacao = calcula_valor_amortizacao
-
-        # def calcula_valor_amortizacao(valor_nominal, taxa_juros, periodo):
-        #     """
-        #     Calcula valor da Amortização por periodo
-        #     :param valor_nominal: Valor inicial do empréstimo
-        #     :param taxa_juros: Taxa de Juros por periodo
-        #     :param periodo: Total number of periods
-        #     :return: Amortização amount por periodo
-        #     """
-        #     x = (1 + taxa_juros) ** periodo
-        #     return valor_nominal * (taxa_juros * x) / (x - 1)
-
-        # def amortization_schedule(principal, interest_rate, period, calculate_amortization_amount):
-        #     """
-        #     Generates amortization schedule
-        #     :param principal: Principal amount
-        #     :param interest_rate: Interest rate per period
-        #     :param period: Total number of periods
-        #     :return: Rows containing period, interest, principal, balance, etc
-        #     """
-        #     amortization_amount = calculate_amortization_amount
-        #     number = 1
-        #     balance = principal
-        #     while number <= period:
-        #         interest = balance * interest_rate
-        #         principal = amortization_amount - interest
-        #         balance = balance - principal
-        #         yield number, amortization_amount, interest, principal, balance if balance > 0 else 0
-        #         number += 1
-
-        # def get_client_ip(request):
-        #     """
-        #     Function to get the client's IP address
-        #     """
-        #     x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
-        #     if x_forwarded_for:
-        #         ip_address = x_forwarded_for.split(',')[0]
-        #     else:
-        #         ip_address = request.META.get('REMOTE_ADDR')
-        #     return ip_address
+    # def get_client_ip(request):
+    #     """
+    #     Function to get the client's IP address
+    #     """
+    #     x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
+    #     if x_forwarded_for:
+    #         ip_address = x_forwarded_for.split(',')[0]
+    #     else:
+    #         ip_address = request.META.get('REMOTE_ADDR')
+    #     return ip_address
 
 
 class Pagamento(models.Model):
     """
-    This class contains the representation of the fields in the Pagamento table.
+    Esta classe contém a representação dos campos da mesa de Pagamento.
     """
     emprestimo_id = models.ForeignKey(
         'api.Emprestimo', related_name='emprestimo_pagamento', on_delete=models.DO_NOTHING,
