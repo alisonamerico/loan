@@ -66,10 +66,10 @@ class Emprestimo(models.Model):
 
     def calcula_valor_amortizacao(calcula_valor_parcela, calcula_valor_juros_em_reais):
         """
-        Calcula valor dos juros a ser pago em reais.
-        :param valor_nominal: Valor total que resta pagar em cada periodo.
-        :param taxa_juros: Taxa de Juros por periodo
-        :return valor_juros_em_reais:  Retorna o valor do juros em reais.
+        Calcula valor da amortização
+        :param calcula_valor_parcela: Função que calcula o valor da parcela.
+        :param calcula_valor_juros_em_reais: Função que calcula valor juros em reais.
+        :return amortizacao:  Retorna o valor do amortização.
         """
         amortizacao = calcula_valor_parcela - calcula_valor_juros_em_reais
         return amortizacao
@@ -84,36 +84,38 @@ class Emprestimo(models.Model):
         saldo_devedor = valor_nominal - calcula_valor_amortizacao
         return saldo_devedor
 
-    def cronograma_de_amortizacao(
-            calcula_valor_amortizacao, valor_nominal, calcula_taxa_juros_em_percentual, periodo
-    ):
+    def cronograma_de_amortizacao(valor_nominal, calcula_valor_amortizacao,
+                                  calcula_saldo_devedor, periodo
+                                  ):
         """
-        Calcula valor do saldo devedor.
-        :param valor_nominal: Valor total que resta pagar em cada periodo.
+        Função que gera uma lista com os valores de:
+        periodo (meses) | valor_parcela | amortizacao | valor_juros_em_reais | saldo_devedor
+        :param valor_nominal: Valor total que resta pagar ou saldo devedor em cada periodo.
         :param calcula_valor_amortizacao: Função que calcula o valor da amortização.
-        :return saldo_devedor:  Retorna o valor do do saldo devedor.
+        :param taxa_juros_percentual: Valor da taxa de juros em percentual esperada.
+        :param periodo: Número de meses
+        :return Retorna periodo (meses), valor_parcela, amortizacao, valor_juros_em_reais, saldo_devedor
+        enquanto o número de parcelas a serem pagas forem menores que o período acordado para ser pago.
         """
-        valor_amortizacao = calcula_valor_amortizacao
         numero_parcelas = 1
-        saldo_devedor = valor_nominal
-        while numero_parcelas <= periodo:
-            interest = saldo_devedor * calcula_taxa_juros_em_percentual
-            valor_nominal = valor_amortizacao - interest
-            saldo_devedor = saldo_devedor - valor_nominal
-            yield numero_parcelas, valor_amortizacao, interest, valor_nominal, saldo_devedor \
-                if saldo_devedor > 0 else 0
-            numero_parcelas += 1
+        valor_amortizacao = calcula_valor_amortizacao
+        saldo_devedor = calcula_saldo_devedor
+        while numero_parcelas <= periodo:  # <-- parei aqui
+            # valor_nominal = saldo_devedor
+            # yield numero_parcelas, valor_amortizacao, valor_nominal, saldo_devedor \
+            #     if saldo_devedor > 0 else 0
+            # numero_parcelas += 1
 
-    # def get_client_ip(request):
-    #     """
-    #     Function to get the client's IP address
-    #     """
-    #     x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
-    #     if x_forwarded_for:
-    #         ip_address = x_forwarded_for.split(',')[0]
-    #     else:
-    #         ip_address = request.META.get('REMOTE_ADDR')
-    #     return ip_address
+            # def get_client_ip(request):
+            #     """
+            #     Function to get the client's IP address
+            #     """
+            #     x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
+            #     if x_forwarded_for:
+            #         ip_address = x_forwarded_for.split(',')[0]
+            #     else:
+            #         ip_address = request.META.get('REMOTE_ADDR')
+            #     return ip_address
 
 
 class Pagamento(models.Model):
