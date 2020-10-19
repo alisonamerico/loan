@@ -49,7 +49,7 @@ class Pagamento(models.Model):
     Esta classe contém a representação dos campos da mesa de Pagamento.
     """
     emprestimo_id = models.ForeignKey(
-        'api.Emprestimo', related_name='emprestimo_pagamento', on_delete=models.DO_NOTHING,
+        'api.Emprestimo', related_name='emprestimo_pagamento', on_delete=models.SET_NULL,
         null=True, default=None, blank=True
     )
     data_pagamento = models.DateTimeField(verbose_name='Data do Pagamento', auto_now_add=True)
