@@ -32,6 +32,29 @@ class Emprestimo(models.Model):
         """A string representation of the model."""
         return f'{self.cliente}, {self.valor_nominal}, {self.data_solicitacao_emprestimo}'
 
+    def calcula_amortizacao_de_emprestimo(valor_nominal, taxa_juros, periodo):
+        taxa_juros = taxa_juros / 100
+        valor_parcela = (valor_nominal * taxa_juros) / (1 - (1 / (1 + taxa_juros) ** periodo))
+        valor_juros_em_reais = valor_nominal * taxa_juros
+        amortizacao = valor_parcela - valor_juros_em_reais
+        saldo_devedor = valor_nominal - amortizacao
+        return (valor_parcela, valor_juros_em_reais, saldo_devedor)
+
+    def agendamento_de_amortizacao(valor_nominal, taxa_juros, periodo, calcula_amortizacao_de_emprestimo):
+        for numero_parcelas in range(periodo, 0, -1):
+            lista_valor_parcela = []
+            lista_amortizacao = []
+            lista_taxa_juros_em_reais = []
+            lista_saldo_devedor = []
+            valor_parcela, amortizacao, valor_juros_em_reais, saldo_devedor,\
+                valor_nominal = calcula_amortizacao_de_emprestimo(
+                    valor_nominal, taxa_juros, numero_parcelas)
+            lista_valor_parcela.append(valor_parcela)
+            lista_amortizacao.append(amortizacao)
+            lista_taxa_juros_em_reais.append(valor_juros_em_reais)
+            lista_saldo_devedor.append(saldo_devedor)
+            lista_saldo_devedor.append(valor_nominal)
+
     # def get_client_ip(request):
     #     """
     #     Function to get the client's IP address
