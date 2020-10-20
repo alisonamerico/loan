@@ -46,7 +46,7 @@ class Emprestimo(models.Model):
             lista_amortizacao = []
             lista_taxa_juros_em_reais = []
             lista_saldo_devedor = []
-            valor_parcela, amortizacao, valor_juros_em_reais, saldo_devedor,\
+            valor_parcela, amortizacao, valor_juros_em_reais,\
                 valor_nominal = calcula_amortizacao_de_emprestimo(
                     valor_nominal, taxa_juros, numero_parcelas)
             lista_valor_parcela.append(valor_parcela)
