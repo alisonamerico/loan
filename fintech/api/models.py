@@ -52,8 +52,8 @@ class Emprestimo(models.Model):
             lista_valor_parcela.append(valor_parcela)
             lista_amortizacao.append(amortizacao)
             lista_taxa_juros_em_reais.append(valor_juros_em_reais)
-            lista_saldo_devedor.append(saldo_devedor)
             lista_saldo_devedor.append(valor_nominal)
+            return lista_valor_parcela, lista_amortizacao, lista_taxa_juros_em_reais,
 
     # def get_client_ip(request):
     #     """
