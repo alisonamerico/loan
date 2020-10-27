@@ -9,12 +9,13 @@ class EmprestimoSerializer(serializers.Serializer):
     EmprestimoSerializer - It will be defined which fields
     will be displayed in the Emprestimo view.
     """
+    model = Emprestimo
 
     cliente = serializers.ReadOnlyField(source='cliente.first_name')
     valor_nominal = serializers.DecimalField(max_digits=8, decimal_places=2)
     taxa_juros = serializers.FloatField(default=0, validators=[MinValueValidator(0)])
     periodo = serializers.IntegerField()
-    endereco_ip = serializers.ReadOnlyField()
+    endereco_ip = serializers.GenericIPAddressField()
     data_solicitacao_emprestimo = serializers.DateTimeField()
     banco = serializers.CharField(max_length=50)
 
