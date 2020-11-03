@@ -20,6 +20,6 @@ class PagamentoAdmin(admin.ModelAdmin):
     It will be defined which fields will be displayed
     in the Pagamento view in the Admin
     """
-    list_display = ('emprestimo_id', 'data_pagamento', 'valor_pagamento')
-    search_fields = ['emprestimo_id', 'data_pagamento', 'valor_pagamento']
+    list_display = ('emprestimo', 'data_pagamento', 'valor_pagamento')
+    search_fields = ['emprestimo', 'data_pagamento', 'valor_pagamento']
     ordering = ('-data_pagamento',)

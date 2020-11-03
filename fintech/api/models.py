@@ -1,7 +1,7 @@
 from django.db import models
 from django.contrib.auth import get_user_model
 from django.core.validators import MinValueValidator
-from fintech.api.amount import calcula_amortizacao_de_emprestimo
+# from fintech.api.amount import calcula_amortizacao_de_emprestimo
 
 
 class Emprestimo(models.Model):
@@ -17,8 +17,7 @@ class Emprestimo(models.Model):
     )
     periodo = models.IntegerField(verbose_name='Período (Número de Meses)')
     endereco_ip = models.GenericIPAddressField(verbose_name='Endereço IP do cliente', protocol='IPV4')
-    data_solicitacao_emprestimo = models.DateTimeField(
-        verbose_name='Data que o empréstimo foi solicitado', auto_now_add=True)
+    data_solicitacao_emprestimo = models.DateTimeField(verbose_name='Data Emprestimo', auto_now_add=True)
     banco = models.CharField(verbose_name='Banco', max_length=50)
     cliente = models.OneToOneField(
         get_user_model(), verbose_name='Nome do cliente', on_delete=models.CASCADE
@@ -33,51 +32,49 @@ class Emprestimo(models.Model):
         """A string representation of the model."""
         return f'{self.cliente}, {self.valor_nominal}, {self.data_solicitacao_emprestimo}'
 
-    def agendamento_de_amortizacao(valor_nominal, taxa_juros, periodo):
-        valor_amortizacao = calcula_amortizacao_de_emprestimo(valor_nominal, taxa_juros, periodo)
-        numero_parcelas = 1
-        saldo_devedor = valor_nominal
-        while numero_parcelas <= periodo:
-            valor_juros_em_reais = saldo_devedor * taxa_juros
-            valor_nominal = valor_amortizacao - valor_juros_em_reais
-            saldo_devedor = saldo_devedor - valor_nominal
-            yield numero_parcelas, valor_amortizacao, valor_juros_em_reais, valor_nominal,\
-                saldo_devedor if saldo_devedor > 0 else 0
-            numero_parcelas += 1
+    # def agendamento_de_amortizacao(valor_nominal, taxa_juros, periodo):
+    #     valor_amortizacao = calcula_amortizacao_de_emprestimo(valor_nominal, taxa_juros, periodo)
+    #     numero_parcelas = 1
+    #     saldo_devedor = valor_nominal
+    #     while numero_parcelas <= periodo:
+    #         valor_juros_em_reais = saldo_devedor * taxa_juros
+    #         valor_nominal = valor_amortizacao - valor_juros_em_reais
+    #         saldo_devedor = saldo_devedor - valor_nominal
+    #         yield numero_parcelas, valor_amortizacao, valor_juros_em_reais, valor_nominal,\
+    #             saldo_devedor if saldo_devedor > 0 else 0
+    #         numero_parcelas += 1
 
-    # def agendamento_de_amortizacao(valor_nominal, taxa_juros, periodo, calcula_amortizacao_de_emprestimo):
-    #     for numero_parcelas in range(periodo, 0, -1):
-    #         lista_valor_parcela = []
-    #         lista_amortizacao = []
-    #         lista_taxa_juros_em_reais = []
-    #         lista_saldo_devedor = []
-    #         valor_parcela, amortizacao, valor_juros_em_reais,\
-    #             valor_nominal = calcula_amortizacao_de_emprestimo(
-    #                 valor_nominal, taxa_juros, numero_parcelas)
-    #         lista_valor_parcela.append(valor_parcela)
-    #         lista_amortizacao.append(amortizacao)
-    #         lista_taxa_juros_em_reais.append(valor_juros_em_reais)
-    #         lista_saldo_devedor.append(valor_nominal)
-    #         return lista_valor_parcela, lista_amortizacao, lista_taxa_juros_em_reais, lista_saldo_devedor
+    def calcula_amortizacao_de_emprestimo(valor_nominal, taxa_juros, periodo):
+        taxa_juros = taxa_juros / 100
+        valor_parcela = (valor_nominal * taxa_juros) / (1 - (1 / (1 + taxa_juros) ** periodo))
+        valor_juros_em_reais = valor_nominal * taxa_juros
+        amortizacao = valor_parcela - valor_juros_em_reais
+        saldo_devedor = valor_nominal - amortizacao
+        return (valor_parcela, valor_juros_em_reais, saldo_devedor)
 
-    def get_client_ip(request):
-        """
-        Function to get the client's IP address
-        """
-        x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
-        if x_forwarded_for:
-            ip_address = x_forwarded_for.split(',')[0]
-        else:
-            ip_address = request.META.get('REMOTE_ADDR')
-        return ip_address
+    @property
+    def agendamento_de_amortizacao(valor_nominal, taxa_juros, periodo, calcula_amortizacao_de_emprestimo):
+        for numero_parcelas in range(periodo, 0, -1):
+            lista_valor_parcela = []
+            lista_amortizacao = []
+            lista_taxa_juros_em_reais = []
+            lista_saldo_devedor = []
+            valor_parcela, amortizacao, valor_juros_em_reais,\
+                valor_nominal = calcula_amortizacao_de_emprestimo(
+                    valor_nominal, taxa_juros, numero_parcelas)
+            lista_valor_parcela.append(valor_parcela)
+            lista_amortizacao.append(amortizacao)
+            lista_taxa_juros_em_reais.append(valor_juros_em_reais)
+            lista_saldo_devedor.append(valor_nominal)
+            return lista_valor_parcela, lista_amortizacao, lista_taxa_juros_em_reais, lista_saldo_devedor
 
 
 class Pagamento(models.Model):
     """
     Esta classe contém a representação dos campos da mesa de Pagamento.
     """
-    emprestimo_id = models.ForeignKey(
-        'api.Emprestimo', related_name='emprestimo_pagamento', on_delete=models.SET_NULL,
+    emprestimo = models.ForeignKey(
+        'api.Emprestimo', related_name='pagamentos', on_delete=models.SET_NULL,
         null=True, default=None, blank=True
     )
     data_pagamento = models.DateTimeField(verbose_name='Data do Pagamento', auto_now_add=True)
@@ -91,4 +88,4 @@ class Pagamento(models.Model):
 
     def __str__(self):
         """A string representation of the model."""
-        return f'{self.emprestimo_id}, {self.data_pagamento}, {self.valor_pagamento}'
+        return f'{self.emprestimo}, {self.data_pagamento}, {self.valor_pagamento}'
